@@ -1,4 +1,5 @@
 username,password,role,nama_lengkap,email
+admin,123,admin,Sang Admin,admin@unmul.ac.id
 budiono,123,dosen,budiono siregar,budiono@unmul.ac.id
 olaa,123,mahasiswa,olaa,olaa@gmail.com
 zefri,123,mahasiswa,zefri,zefri@gmail.com

@@ -1,7 +1,8 @@
-username,password,role,nama_lengkap,email
-admin,123,admin,Sang Admin,admin@unmul.ac.id
-budiono,123,dosen,budiono siregar,budiono@unmul.ac.id
-olaa,123,mahasiswa,olaa,olaa@gmail.com
-zefri,123,mahasiswa,zefri,zefri@gmail.com
-rifaa,123,mahasiswa,rifaa,rifaa@gmail.com
-yudha,123,mahasiswa,yudha,yudha@gmail.com
+username,password,role,nama_lengkap
+admin,123,admin,Sang Admin
+budiono,123,dosen,budiono siregar
+olaa,123,mahasiswa,olaa
+zefri,123,mahasiswa,zefri
+rifaa,123,mahasiswa,rifaa
+yudha,123,mahasiswa,yudha
+pompom,123,mahasiswa,Dhika Berau

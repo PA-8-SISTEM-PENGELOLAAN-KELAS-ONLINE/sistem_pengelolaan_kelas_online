@@ -21,6 +21,16 @@ def read_csv(csvname):
     except Exception as e:
         print(f"Terjadi kesalahan saat membaca file: {csvname}")
         return []
+    
+def write_csv(filename, rows):
+    if not rows:
+        return
+
+    headers = rows[0].keys()
+    with open (filename, mode="w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=headers)
+        writer.writeheader()
+        writer.writerows(rows)
 
 # BAGIAN CRUD PROGRAMNYA
 def login():
@@ -50,6 +60,86 @@ def read_user():
     headers = ["username", "nama_lengkap", "role"]
     table("Daftar Pengguna", headers, users)
 
+def create_user():
+    data = read_csv("users.csv")
+    username = input("Masukkan Username: ")
+
+    for user in data :
+        if user["username"] == username:
+            print("Username sudah tersedia, coba lagi!")
+            return
+
+    nama_lengkap = input("Masukkan Nama Lengkap: ")
+    role = input("Pilih Role (Mahasiswa / Dosen): ")
+
+    if role not in {"mahasiswa", "dosen"}:
+        print("Role yang anda masukkan tidak valid!")
+        return
+    
+    password = pwinput("Masukkan Password: ")
+    
+    id = len(data) + 1 if data else 1 
+
+    data.append({
+        "username": username,
+        "password": password,
+        "role": role,
+        "nama_lengkap": nama_lengkap
+    })
+
+    write_csv("users.csv", data)
+    print("Pengguna berhasil ditambahkan")
+
+def update_user():
+    data = read_user("users.csv")
+
+    if not data:
+        print("saat ini belum ada pengguna")
+        return
+    
+    username = input("masukkan username yang ingin diubah: ")
+    found = False
+
+    for user in data:
+        if user["username"] == username:
+            found = True
+            print(f"Username yang ingin diubah: {username}")
+
+            nama_baru = input("Masukkan nama lengkap baru (kosongkan jika tidak ingin diubah): ")
+            password_baru = pwinput("Masukkan password baru (kosongkan jika tidak ingin diubah): ")
+
+            user["nama_lengkap"] = nama_baru
+            user["password"] = password_baru
+            write_csv("users.csv", data)
+
+            print(f"Data pengguna {username} berhasil diubah!")
+            break
+
+    if not found:
+        print(f"Username yang Anda inputkan '{username}' tidak ditemukan!")
+
+def delete_user():
+    data = read_user("users.csv")
+
+    if not data:
+        print("saat ini belum ada pengguna")
+        return
+    
+    username = input("masukkan username yang ingin diubah: ")
+    # new_data = [user for user in data if user["username"] != username]
+    for user in data:
+        if user["username"] == username:
+            confirm = input("Apakah Anda yakin ingin menghapus pengguna ini? (y/n) ")
+
+            if confirm.lower() == "y":
+                data.remover(user)
+                write_csv("users.csv", data)
+                print("Pengguna {username} berhasil dihapus!")
+            else:
+                print("Batal Menghapus.")
+            return
+    print(f"Username {username} tidak ditemukan")
+
 # BAGIAN MENU DAN MAIN UTAMA
 def menu_admin():
     while True:
@@ -74,7 +164,11 @@ def menu_admin():
         if pil_menu == "1":
             read_user()
         elif pil_menu == "2":
-            print("test")
+            print("\n")
+            print("=" * 16, "Tambah Penggunaa", "=" * 16)
+            create_user()
+            print("="* 50)
+            print("\n")
         elif pil_menu == "3":
             print("test")
         elif pil_menu == "4":

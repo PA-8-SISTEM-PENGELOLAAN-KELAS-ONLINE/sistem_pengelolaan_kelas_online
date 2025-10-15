@@ -1,4 +1,4 @@
-import csv, os
+import csv, os, random, string
 from pwinput import pwinput
 from prettytable import PrettyTable
 
@@ -10,6 +10,9 @@ def table(title, headers, rows):
         table.add_row([row.get(head,"") for head in headers])
     print("\n" + title)
     print(table)
+
+def random_kode():
+    return "".join(random.choices(string.ascii_uppercase, k=5))
 
 def read_csv(csvname):
     try:
@@ -91,7 +94,7 @@ def create_user():
     print("Pengguna berhasil ditambahkan")
 
 def update_user():
-    data = read_user("users.csv")
+    data = read_csv("users.csv")
 
     if not data:
         print("saat ini belum ada pengguna")
@@ -119,26 +122,56 @@ def update_user():
         print(f"Username yang Anda inputkan '{username}' tidak ditemukan!")
 
 def delete_user():
-    data = read_user("users.csv")
+    data = read_csv("users.csv")
 
     if not data:
         print("saat ini belum ada pengguna")
         return
     
-    username = input("masukkan username yang ingin diubah: ")
-    # new_data = [user for user in data if user["username"] != username]
+    username = input("masukkan username yang ingin dihapus: ")
     for user in data:
         if user["username"] == username:
             confirm = input("Apakah Anda yakin ingin menghapus pengguna ini? (y/n) ")
 
             if confirm.lower() == "y":
-                data.remover(user)
+                data.remove(user)
                 write_csv("users.csv", data)
-                print("Pengguna {username} berhasil dihapus!")
+                print(f"Pengguna {username} berhasil dihapus!")
             else:
                 print("Batal Menghapus.")
             return
     print(f"Username {username} tidak ditemukan")
+
+def read_kelas():
+        kelas = read_csv("kelas.csv")
+
+        if not kelas:
+            print("Tidak ada data yang tersedia!")
+            return
+
+        headers = ["id", "kode", "judul", "dosen", "deskripsi"]
+        table("Daftar Semua Kelas Online", headers, kelas)
+
+def create_kelas():
+    kelas = read_csv("kelas.csv")
+    kode = random_kode()
+    judul = input("Masukkan judul kelas: ")
+    dosen = input("Masukkan judul kelas: ")
+    deskripsi = input("Masukkan deskripsi kelas: ")
+    materi = input("Masukkan nama file materi: ")
+    tugas = input("Masukkan nama file tugas (opsional): ")
+
+    kelas.append({
+        "kode": kode,
+        "judul": judul,
+        "dosen": dosen,
+        "deskripsi": deskripsi,
+        "materi": materi,
+        "tugas": tugas
+    })
+    
+    write_csv("kelas.csv", kelas)
+    print(f"Kelas '{judul}' berhasil ditambahkan dengan kode unik {kode}")
 
 # BAGIAN MENU DAN MAIN UTAMA
 def menu_admin():
@@ -170,9 +203,17 @@ def menu_admin():
             print("="* 50)
             print("\n")
         elif pil_menu == "3":
-            print("test")
+            print("\n")
+            print("=" * 15, "Ubah Pengguna", "=" * 15)
+            update_user()
+            print("=" * 50)
+            print("\n")
         elif pil_menu == "4":
-            print("test")
+            print("\n")
+            print("=" * 16, "Hapus Pengguna!", "=" * 16)
+            delete_user()
+            print("=" * 50)
+            print("\n")
         elif pil_menu == "5":
             print("test")
         elif pil_menu == "6":

@@ -1,333 +1,353 @@
-import csv, os, random, string
+# class_system.py
+import csv
+import random
+import string
+from datetime import datetime
 from pwinput import pwinput
 from prettytable import PrettyTable
 
-# BAGIAN UTILITY
-def table(title, headers, rows):
-    table = PrettyTable()
-    table.field_names = headers
-    for row in rows:
-        table.add_row([row.get(head,"") for head in headers])
-    print("\n" + title)
-    print(table)
-
-def random_kode():
-    return "".join(random.choices(string.ascii_uppercase, k=5))
-
-def read_csv(csvname):
+# -----------------------
+# Helper CSV utilities
+# -----------------------
+def ensure_csv_with_header(filename, headers):
+    """Buat file dengan header jika belum ada."""
     try:
-        with open (csvname, mode="r", newline="") as file:
-            reader = csv.DictReader(file)
-            data = [row for row in reader]
-            return data
-    
-    except Exception as e:
-        print(f"Terjadi kesalahan saat membaca file: {csvname}")
+        with open(filename, mode='r', newline='', encoding='utf-8') as f:
+            # jika bisa dibuka, asumsikan header sudah ada
+            pass
+    except FileNotFoundError:
+        with open(filename, mode='w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+
+def read_csv(filename):
+    try:
+        with open(filename, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            return list(reader)
+    except FileNotFoundError:
         return []
-    
-def write_csv(filename, rows):
-    if not rows:
-        return
 
-    headers = rows[0].keys()
-    with open (filename, mode="w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=headers)
-        writer.writeheader()
-        writer.writerows(rows)
-
-# BAGIAN CRUD PROGRAMNYA
-def login():
+def append_csv(filename, row, headers=None):
+    # jika file belum ada dan headers diberikan, buat header
     try:
-        username = input("Input username: ")
-        password = pwinput("Input password: ")
-    except KeyboardInterrupt:
-        print("\nAnda keluar dari Login!")
+        with open(filename, mode='a', newline='', encoding='utf-8') as f:
+            if headers:
+                writer = csv.DictWriter(f, fieldnames=headers)
+            else:
+                # ambil header dari file
+                with open(filename, mode='r', newline='', encoding='utf-8') as fr:
+                    reader = csv.DictReader(fr)
+                    writer = csv.DictWriter(f, fieldnames=reader.fieldnames)
+            writer.writerow(row)
+    except FileNotFoundError:
+        # buat file baru dan tulis header jika headers tersedia
+        if not headers:
+            raise
+        with open(filename, mode='w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerow(row)
+
+def write_csv_all(filename, rows, headers):
+    with open(filename, mode='w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=headers)
+        writer.writeheader()
+        for r in rows:
+            writer.writerow(r)
+
+def generate_code(n=5):
+    return ''.join(random.choice(string.ascii_uppercase) for _ in range(n))
+
+# -----------------------
+# File names & headers
+# -----------------------
+USERS_FILE = 'users.csv'
+USERS_HDR = ['id','username','password','nama','role','saldo']  # role: student | teacher
+
+CLASSES_FILE = 'classes.csv'
+CLASSES_HDR = ['id','kode','judul','dosen','deskripsi','harga','materi_pdf']  # materi_pdf = filename string
+
+PURCHASES_FILE = 'purchases.csv'
+PURCHASES_HDR = ['id','user_id','class_id','timestamp']  # akses yang dimiliki user
+
+INVOICES_FILE = 'invoices.csv'
+INVOICES_HDR = ['id','user_id','class_id','amount','timestamp']
+
+# pastikan file ada
+ensure_csv_with_header(USERS_FILE, USERS_HDR)
+ensure_csv_with_header(CLASSES_FILE, CLASSES_HDR)
+ensure_csv_with_header(PURCHASES_FILE, PURCHASES_HDR)
+ensure_csv_with_header(INVOICES_FILE, INVOICES_HDR)
+
+# -----------------------
+# Utility visual
+# -----------------------
+def show_table(title, headers, rows):
+    t = PrettyTable()
+    t.field_names = headers
+    for r in rows:
+        t.add_row([r.get(h,"") for h in headers])
+    print("\n" + title)
+    print(t)
+
+# -----------------------
+# Auth & user management
+# -----------------------
+def register():
+    users = read_csv(USERS_FILE)
+    usernames = {u['username'] for u in users}
+    print("\n=== REGISTER ===")
+    while True:
+        username = input("Username: ").strip()
+        if not username:
+            print("Username tidak boleh kosong.")
+            continue
+        if username in usernames:
+            print("Username sudah dipakai.")
+            continue
+        break
+    password = pwinput("Password: ")
+    nama = input("Nama lengkap: ").strip()
+    role = ''
+    while role not in ('student','teacher'):
+        role = input("Role (student / teacher): ").strip().lower()
+    user_id = str(len(users)+1)
+    # saldo awal 0
+    new = {'id': user_id, 'username': username, 'password': password, 'nama': nama, 'role': role, 'saldo': '0'}
+    append_csv(USERS_FILE, new, USERS_HDR)
+    print(f"Registrasi selesai. Anda terdaftar sebagai {role} dengan saldo 0.")
+
+def login():
+    users = read_csv(USERS_FILE)
+    by_username = {u['username']: u for u in users}
+    print("\n=== LOGIN ===")
+    username = input("Username: ").strip()
+    password = pwinput("Password: ")
+    user = by_username.get(username)
+    if user and user['password'] == password:
+        print(f"Selamat datang, {user['nama']} ({user['role']})")
+        return user
+    else:
+        print("Login gagal: username atau password salah.")
         return None
 
-    with open("users.csv", mode="r") as file:
-        reader = csv.DictReader(file)
-        for user in reader:
-            if user["username"] == username and user["password"] == password:
-                print(f"Selamat datang, {user['nama_lengkap']}, sebagai {user['role']}!\n")
-                return user
-        
-    print("Login failed! username atau password salah!\n")
-            
-def read_user():
-    users = read_csv("users.csv")
-
-    if not users:
-        print("Tidak ada data yang tersedia!")
-        return
-
-    headers = ["username", "nama_lengkap", "role"]
-    table("Daftar Pengguna", headers, users)
-
-def create_user():
-    data = read_csv("users.csv")
-    username = input("Masukkan Username: ")
-
-    for user in data :
-        if user["username"] == username:
-            print("Username sudah tersedia, coba lagi!")
-            return
-
-    nama_lengkap = input("Masukkan Nama Lengkap: ")
-    role = input("Pilih Role (Mahasiswa / Dosen): ")
-
-    if role not in {"mahasiswa", "dosen"}:
-        print("Role yang anda masukkan tidak valid!")
-        return
-    
-    password = pwinput("Masukkan Password: ")
-    
-    id = len(data) + 1 if data else 1 
-
-    data.append({
-        "username": username,
-        "password": password,
-        "role": role,
-        "nama_lengkap": nama_lengkap
-    })
-
-    write_csv("users.csv", data)
-    print("Pengguna berhasil ditambahkan")
-
-def update_user():
-    data = read_csv("users.csv")
-
-    if not data:
-        print("saat ini belum ada pengguna")
-        return
-    
-    username = input("masukkan username yang ingin diubah: ")
-    found = False
-
-    for user in data:
-        if user["username"] == username:
-            found = True
-            print(f"Username yang ingin diubah: {username}")
-
-            nama_baru = input("Masukkan nama lengkap baru (kosongkan jika tidak ingin diubah): ")
-            password_baru = pwinput("Masukkan password baru (kosongkan jika tidak ingin diubah): ")
-
-            user["nama_lengkap"] = nama_baru
-            user["password"] = password_baru
-            write_csv("users.csv", data)
-
-            print(f"Data pengguna {username} berhasil diubah!")
-            break
-
-    if not found:
-        print(f"Username yang Anda inputkan '{username}' tidak ditemukan!")
-
-def delete_user():
-    data = read_csv("users.csv")
-
-    if not data:
-        print("saat ini belum ada pengguna")
-        return
-    
-    username = input("masukkan username yang ingin dihapus: ")
-    for user in data:
-        if user["username"] == username:
-            confirm = input("Apakah Anda yakin ingin menghapus pengguna ini? (y/n) ")
-
-            if confirm.lower() == "y":
-                data.remove(user)
-                write_csv("users.csv", data)
-                print(f"Pengguna {username} berhasil dihapus!")
-            else:
-                print("Batal Menghapus.")
-            return
-    print(f"Username {username} tidak ditemukan")
-
-def read_kelas():
-        kelas = read_csv("kelas.csv")
-
-        if not kelas:
-            print("Tidak ada data yang tersedia!")
-            return
-
-        headers = ["id", "kode", "judul", "dosen", "deskripsi"]
-        table("Daftar Semua Kelas Online", headers, kelas)
-
-def create_kelas():
-    kelas = read_csv("kelas.csv")
-    kode = random_kode()
-    judul = input("Masukkan judul kelas: ")
-    dosen = input("Masukkan judul kelas: ")
-    deskripsi = input("Masukkan deskripsi kelas: ")
-    materi = input("Masukkan nama file materi: ")
-    tugas = input("Masukkan nama file tugas (opsional): ")
-
-    kelas.append({
-        "kode": kode,
-        "judul": judul,
-        "dosen": dosen,
-        "deskripsi": deskripsi,
-        "materi": materi,
-        "tugas": tugas
-    })
-    
-    write_csv("kelas.csv", kelas)
-    print(f"Kelas '{judul}' berhasil ditambahkan dengan kode unik {kode}")
-
-# BAGIAN MENU DAN MAIN UTAMA
-def menu_admin():
+# -----------------------
+# Teacher actions: create class
+# -----------------------
+def create_class(current_user):
+    print("\n=== BUAT KELAS (Teacher) ===")
+    judul = input("Judul kelas: ").strip()
+    deskripsi = input("Deskripsi singkat: ").strip()
     while True:
-        print("\n")
-
-        print("=" * 19, "Menu Admin", "=" * 19)
-        print("1. Lihat/Search/Sort Pengguna")
-        print("2. Tambah Pengguna")
-        print("3. Ubah Pengguna")
-        print("4. Hapus Pengguna")
-        print("5. Lihat/Search/Sort Kelas")
-        print("6. Tambah Kelas")
-        print("7. Ubah Kelas")
-        print("8. Hapus Kelas")
-        print("9. Lihat Semua Request")
-        print("10. Logout")
-        print("0. Exit")
-        print("="* 50)
-        
-        pil_menu = input("Pilih menu diatas: ")
-        
-        if pil_menu == "1":
-            read_user()
-        elif pil_menu == "2":
-            print("\n")
-            print("=" * 16, "Tambah Penggunaa", "=" * 16)
-            create_user()
-            print("="* 50)
-            print("\n")
-        elif pil_menu == "3":
-            print("\n")
-            print("=" * 15, "Ubah Pengguna", "=" * 15)
-            update_user()
-            print("=" * 50)
-            print("\n")
-        elif pil_menu == "4":
-            print("\n")
-            print("=" * 16, "Hapus Pengguna!", "=" * 16)
-            delete_user()
-            print("=" * 50)
-            print("\n")
-        elif pil_menu == "5":
-            print("test")
-        elif pil_menu == "6":
-            print("test")
-        elif pil_menu == "7":
-            print("test")
-        elif pil_menu == "8":
-            print("test")
-        elif pil_menu == "9":
-            print("test")
-        elif pil_menu == "10":
-            print("Anda telah logout!")
+        harga = input("Harga (numeric, misal 10000): ").strip()
+        if harga.isdigit():
             break
-        elif pil_menu == "0":
-            print("Anda telah keluar dari program!")
-            exit()
+        print("Masukkan angka untuk harga.")
+    materi = input("Nama file materi PDF (misal materi1.pdf). Simpan file terpisah di tempat yang sesuai: ").strip()
+    classes = read_csv(CLASSES_FILE)
+    kelas_id = str(len(classes)+1)
+    kode = generate_code(5)
+    new = {
+        'id': kelas_id,
+        'kode': kode,
+        'judul': judul,
+        'dosen': current_user['nama'],
+        'deskripsi': deskripsi,
+        'harga': harga,
+        'materi_pdf': materi
+    }
+    append_csv(CLASSES_FILE, new, CLASSES_HDR)
+    print(f"Kelas dibuat dengan kode {kode} dan id {kelas_id}.")
+
+# -----------------------
+# Student actions
+# -----------------------
+def list_classes(show_all_fields=False):
+    classes = read_csv(CLASSES_FILE)
+    if not classes:
+        print("Belum ada kelas tersedia.")
+        return
+    if show_all_fields:
+        headers = CLASSES_HDR
+    else:
+        headers = ['id','kode','judul','dosen','deskripsi','harga']
+    # tampilkan ringkas
+    rows = [{h: c.get(h,"") for h in headers} for c in classes]
+    show_table("Daftar Kelas", headers, rows)
+
+def tambah_saldo(current_user):
+    users = read_csv(USERS_FILE)
+    user = next((u for u in users if u['id']==current_user['id']), None)
+    if not user:
+        print("User tidak ditemukan (internal error).")
+        return
+    print(f"Saldo saat ini: {user['saldo']}")
+    while True:
+        nominal = input("Masukkan jumlah top-up (angka): ").strip()
+        if nominal.isdigit():
+            break
+        print("Masukkan angka valid.")
+    new_saldo = int(user['saldo']) + int(nominal)
+    user['saldo'] = str(new_saldo)
+    # tulis ulang file users
+    write_csv_all(USERS_FILE, users, USERS_HDR)
+    print(f"Top-up berhasil. Saldo baru: {user['saldo']}")
+
+def buy_class(current_user):
+    classes = read_csv(CLASSES_FILE)
+    if not classes:
+        print("Belum ada kelas untuk dibeli.")
+        return
+    list_classes()
+    class_id = input("Masukkan id kelas yang ingin dibeli: ").strip()
+    kelas = next((c for c in classes if c['id']==class_id), None)
+    if not kelas:
+        print("Kelas tidak ditemukan.")
+        return
+    price = int(kelas['harga'])
+    users = read_csv(USERS_FILE)
+    user = next((u for u in users if u['id']==current_user['id']), None)
+    if not user:
+        print("User tidak ditemukan (internal error).")
+        return
+    if int(user['saldo']) < price:
+        print("Saldo tidak cukup. Silakan top-up terlebih dahulu.")
+        return
+    # cek apakah sudah memiliki akses
+    purchases = read_csv(PURCHASES_FILE)
+    has = any(p['user_id']==user['id'] and p['class_id']==kelas['id'] for p in purchases)
+    if has:
+        print("Anda sudah memiliki akses ke kelas ini.")
+        return
+    # potong saldo
+    user['saldo'] = str(int(user['saldo']) - price)
+    write_csv_all(USERS_FILE, users, USERS_HDR)
+    # catat pembelian (akses)
+    purchase_id = str(len(purchases)+1)
+    ts = datetime.now().isoformat(sep=' ', timespec='seconds')
+    new_purchase = {'id': purchase_id, 'user_id': user['id'], 'class_id': kelas['id'], 'timestamp': ts}
+    append_csv(PURCHASES_FILE, new_purchase, PURCHASES_HDR)
+    # buat invoice
+    invoices = read_csv(INVOICES_FILE)
+    invoice_id = str(len(invoices)+1)
+    invoice = {'id': invoice_id, 'user_id': user['id'], 'class_id': kelas['id'], 'amount': str(price), 'timestamp': ts}
+    append_csv(INVOICES_FILE, invoice, INVOICES_HDR)
+    # tampilkan invoice sederhana
+    print("\n--- INVOICE ---")
+    print(f"Invoice ID : {invoice_id}")
+    print(f"Tanggal    : {ts}")
+    print(f"Pelanggan  : {user['nama']} (username: {user['username']})")
+    print(f"Kelas      : {kelas['judul']} (kode: {kelas['kode']})")
+    print(f"Jumlah     : {price}")
+    print("----------------")
+    print("Pembelian berhasil. Akses kelas sudah diberikan.")
+
+def access_class(current_user):
+    # tampilkan kelas yang user punya akses dan detail materi
+    purchases = read_csv(PURCHASES_FILE)
+    classes = read_csv(CLASSES_FILE)
+    user_purchases = [p for p in purchases if p['user_id']==current_user['id']]
+    if not user_purchases:
+        print("Anda belum memiliki akses ke kelas apapun.")
+        return
+    # gabungkan
+    rows = []
+    for p in user_purchases:
+        kelas = next((c for c in classes if c['id']==p['class_id']), None)
+        if kelas:
+            rows.append({
+                'id': kelas['id'],
+                'kode': kelas['kode'],
+                'judul': kelas['judul'],
+                'dosen': kelas['dosen'],
+                'deskripsi': kelas['deskripsi'],
+                'materi_pdf': kelas.get('materi_pdf','(tidak ada)')
+            })
+    show_table("Kelas yang Anda Akses", ['id','kode','judul','dosen','deskripsi','materi_pdf'], rows)
+    # opsi: lihat materi (menampilkan nama file)
+    pilihan = input("Masukkan id kelas untuk melihat nama file materi (atau ENTER untuk kembali): ").strip()
+    if pilihan:
+        sel = next((r for r in rows if r['id']==pilihan), None)
+        if sel:
+            print(f"Nama file materi untuk kelas '{sel['judul']}': {sel['materi_pdf']}")
+            print("Catatan: sistem ini hanya menyimpan nama file. Untuk membuka file, buka file PDF tersebut di luar aplikasi ini.")
         else:
-            print("Anda keluar dari program ini!")
-            exit()
+            print("Kelas tidak ditemukan pada daftar akses Anda.")
 
-        print("\n")
-            
-def menu_mhs():
+# -----------------------
+# Admin / Teacher: lihat kelas yang dibuatnya
+# -----------------------
+def my_classes(current_user):
+    classes = read_csv(CLASSES_FILE)
+    my = [c for c in classes if c['dosen']==current_user['nama']]
+    if not my:
+        print("Anda belum membuat kelas.")
+        return
+    show_table("Kelas saya (Teacher)", ['id','kode','judul','deskripsi','harga','materi_pdf'], my)
+
+# -----------------------
+# Main menu loop
+# -----------------------
+def main_menu():
     while True:
-        print("\n")
-
-        print("=" * 17, "Menu Mahasiswa", "=" * 17)
-        print("1. Lihat Semua Kelas")
-        print("2. Daftar Kelas")
-        print("3. Batalkan Kelas")
-        print("4. Lihat Pengajuan Kelas")
-        print("5. Logout")
-        print("0. Exit")
-        print("="* 50)
-
-        pil_menu = input("Pilih menu diatas: ")
-        
-        if pil_menu == "1":
-            print("test")
-        if pil_menu == "2":
-            print("test")
-        elif pil_menu == "3":
-            print("test")
-        elif pil_menu == "4":
-            print("test")
-        elif pil_menu == "5":
-            print("Anda telah logout!")
+        print("\n=== SISTEM PENGELOLAAN KELAS ONLINE (Sederhana) ===")
+        print("1. Register")
+        print("2. Login")
+        print("0. Keluar")
+        choice = input("Pilih: ").strip()
+        if choice == '1':
+            register()
+        elif choice == '2':
+            user = login()
+            if user:
+                user_session(user)
+        elif choice == '0':
+            print("Sampai jumpa.")
             break
-        elif pil_menu == "0":
-            print("Anda telah keluar dari program!")
-            exit()
         else:
-            print("Pilih Anda tidak ada!")
-            exit()
+            print("Pilihan tidak valid.")
 
-        print("\n")
-
-def menu_dosen():
+def user_session(user):
     while True:
-        print("\n")
-        print("=" * 19,"Menu Dosen", "=" * 19)
-        print("1. Lihat/Search/Sort Kelas")
-        print("2. Tambah Kelas")
-        print("3. Ubah Kelas")
-        print("4. Hapus Kelas")
-        print("5. Lihat Pengajuan")
-        print("6. Terima/Tolak Pengajuan")
-        print("7. Logout")
-        print("0. Exit")
-        print("="* 50)
-
-        pil_menu = input("Pilih menu diatas: ")
-        
-        if pil_menu == "1":
-            print("test")
-        if pil_menu == "2":
-            print("test")
-        elif pil_menu == "3":
-            print("test")
-        elif pil_menu == "4":
-            print("test")
-        elif pil_menu == "5":
-            print("test")
-        elif pil_menu == "6":
-            print("test")
-        elif pil_menu == "7":
-            print("Anda telah logout!")
-            break
-        elif pil_menu == "0":
-            print("Anda telah keluar dari program!")
-            exit()
-        else:
-            print("Pilihan Anda tidak ada!")
-
-        print("\n")
-
-def mulai():
-    while True:
-        auth = login()
-
-        if not auth:
-            coba = input("Coba lagi? (y/n): ")
-            if coba != "y":
-                print("Anda telah keluar dari program!")
+        print(f"\n--- Menu ({user['role']}) ---")
+        if user['role'] == 'student':
+            print("1. Lihat daftar kelas")
+            print("2. Tambah saldo")
+            print("3. Beli kelas")
+            print("4. Lihat akses kelas & materi")
+            print("0. Logout")
+            c = input("Pilih: ").strip()
+            if c == '1':
+                list_classes()
+            elif c == '2':
+                tambah_saldo(user)
+            elif c == '3':
+                buy_class(user)
+            elif c == '4':
+                access_class(user)
+            elif c == '0':
                 break
-            continue
-
-        if auth["role"] == "admin":
-            menu_admin()
-        elif auth["role"] == "dosen":
-            menu_dosen()
-        elif auth["role"] == "mahasiswa":
-            menu_mhs()
+            else:
+                print("Pilihan tidak valid.")
+        elif user['role'] == 'teacher':
+            print("1. Buat kelas")
+            print("2. Lihat kelas saya")
+            print("3. Lihat semua kelas")
+            print("0. Logout")
+            c = input("Pilih: ").strip()
+            if c == '1':
+                create_class(user)
+            elif c == '2':
+                my_classes(user)
+            elif c == '3':
+                list_classes(show_all_fields=True)
+            elif c == '0':
+                break
+            else:
+                print("Pilihan tidak valid.")
         else:
-            print("Role Anda tidak valid!")
+            print("Role tidak dikenali. Logout.")
+            break
 
-mulai()
+main_menu()

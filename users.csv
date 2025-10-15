@@ -1,6 +1,4 @@
-username,password,role,nama_lengkap
-admin,123,admin,Sang Admin
-budiono,123,dosen,budiono siregar
-olaa,123,mahasiswa,olaa
-zefri,123,mahasiswa,zefri
-rifaa,123,mahasiswa,rifaa
+id,username,password,nama,role,saldo
+1,olaa,123,Maura,teacher,0
+2,zefri,123,Zefri,student,500000
+3,refa,123,Refa Alviona,teacher,0

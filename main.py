@@ -265,7 +265,7 @@ def buy_class(user):
 def access_class(user):
     purchases = read_csv("purchases.csv")
     classes = read_csv("classes.csv")
-    owned_ids = {p['class_id'] for p in purchases if p['user_id']==user['id']}
+    owned_ids = {p['class_id'] for p in purchases if p['user_id']== user['id']}
     owned_classes = [c for c in classes if c['id'] in owned_ids]
     show_table("Kelas Dimiliki", ['id','kode','judul','dosen','deskripsi','materi_pdf'], owned_classes)
 
@@ -309,6 +309,7 @@ def session(user):
                 access_class(user)
             elif pil == '0': 
                 break
+            
         elif user["role"] == "teacher":
             print("1. Lihat semua kelas")
             print("2. Lihat kelas saya")

@@ -1,4 +1,5 @@
 id,username,password,nama,role,saldo
-1,olaa,123,Maura,teacher,0
+1,olaa,123,Maura,teacher,200000
 2,zefri,123,Zefri,student,2650000
 3,refa,123,Refa Alviona,teacher,0
+4,opah,12,opah,student,800000

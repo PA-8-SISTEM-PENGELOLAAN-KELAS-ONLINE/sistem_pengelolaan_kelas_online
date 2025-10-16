@@ -21,7 +21,7 @@ def append_csv(filename, row, headers):
     try:
         with open(filename, mode='a', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=headers)
-            if f.tell() == 0:  # tulis header jika file baru
+            if f.tell() == 0:
                 writer.writeheader()
             writer.writerow(row)
     except FileNotFoundError:
@@ -78,10 +78,10 @@ def login():
     print("\n=== LOGIN ===")
     username = input("Username: ")
     password = pwinput("Password: ")
-    for u in read_csv("users.csv"):
-        if u['username'] == username and u['password'] == password:
-            print(f"Selamat datang, {u['nama']} ({u['role']})")
-            return u
+    for user in read_csv("users.csv"):
+        if user['username'] == username and user['password'] == password:
+            print(f"Selamat datang, {user['nama']} ({user['role']})")
+            return user
     print("Login gagal: username atau password salah.")
     return None
 
@@ -195,7 +195,14 @@ def tambah_saldo(user):
             u['saldo'] = str(int(u['saldo']) + jumlah)
             user['saldo'] = u['saldo']
     write_csv("users.csv", users, ['id','username','password','nama','role','saldo'])
-    print(f"Top up berhasil! Saldo: Rp{int(user['saldo']):,}")
+    waktu = datetime.now().isoformat(sep=' ', timespec='seconds')
+    
+    print("\n=== INVOICE TOP-UP ===")
+    print(f"Nama Pengguna : {user['nama']}")
+    print(f"Jumlah Top-Up : Rp{jumlah:,}")
+    print(f"Waktu Transaksi: {waktu}")
+    print(f"Saldo Sekarang : Rp{int(user['saldo']):,}")
+    print("=======================")
     return user
 
 def buy_class(user):
@@ -225,20 +232,21 @@ def buy_class(user):
         'timestamp': datetime.now().isoformat(sep=' ', timespec='seconds')
     }
     append_csv("purchases.csv", purchase, ['id','user_id','class_id','timestamp'])
-    print("Pembelian berhasil.")
+    print("\n=== INVOICE PEMBELIAN ===")
+    print(f"Nama: {user['nama']}")
+    print(f"Kelas: {kelas['judul']}")
+    print(f"Dosen: {kelas['dosen']}")
+    print(f"Harga: Rp{harga:,}")
+    print(f"Waktu: {purchase['timestamp']}")
+    print(f"Sisa saldo: Rp{int(user['saldo']):,}")
+    print("==========================")
 
 def access_class(user):
     purchases = read_csv("purchases.csv")
     classes = read_csv("classes.csv")
-    akses = [p for p in purchases if p['user_id']==user['id']]
-    if not akses:
-        print("Belum ada kelas yang Anda miliki.")
-        return
-    data = []
-    for a in akses:
-        k = next((c for c in classes if c['id']==a['class_id']), None)
-        if k: data.append(k)
-    show_table("Kelas yang Dimiliki", ['id','kode','judul','dosen','deskripsi','materi_pdf'], data)
+    owned_ids = {p['class_id'] for p in purchases if p['user_id']==user['id']}
+    owned_classes = [c for c in classes if c['id'] in owned_ids]
+    show_table("Kelas Dimiliki", ['id','kode','judul','dosen','deskripsi','materi_pdf'], owned_classes)
 
 # BAGIAN MENU
 def main_menu():

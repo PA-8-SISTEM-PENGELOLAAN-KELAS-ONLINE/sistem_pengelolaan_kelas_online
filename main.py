@@ -75,15 +75,22 @@ def register():
 
 # BAGIAN CRUD
 def login():
-    print("\n=== LOGIN ===")
-    username = input("Username: ")
-    password = pwinput("Password: ")
-    for user in read_csv("users.csv"):
-        if user['username'] == username and user['password'] == password:
-            print(f"Selamat datang, {user['nama']} ({user['role']})")
-            return user
-    print("Login gagal: username atau password salah.")
-    return None
+    while True:
+        print("\n=== LOGIN ===")
+        username = input("Username: ").strip()
+        password = pwinput("Password: ")
+
+        users = read_csv("users.csv")
+        for user in users:
+            if user['username'] == username and user['password'] == password:
+                print(f"Selamat datang, {user['nama']} ({user['role']})")
+                return user
+
+        print("Login gagal: username atau password salah.")
+        pilihan = input("Apakah Anda ingin mencoba lagi? (y/n): ").strip().lower()
+        if pilihan != 'y':
+            print("Kembali ke menu utama...")
+            return None
 
 def create_class(user):
     print("\n=== BUAT KELAS ===")

@@ -309,7 +309,10 @@ def session(user):
                 access_class(user)
             elif pil == '0': 
                 break
-            
+            else:
+                print("Pilihan Anda tidak tersedia!")
+
+
         elif user["role"] == "teacher":
             print("1. Lihat semua kelas")
             print("2. Lihat kelas saya")
@@ -328,7 +331,10 @@ def session(user):
                 update_class(user)
             elif pil == '5': 
                 delete_class(user)
-            elif pil == '0': break
+            elif pil == '0': 
+                break
+            else:
+                print("Pilihan Anda tidak tersedia!")
         else:
             print("role Anda tidak valid! Terdapat kesalahan fatal dalam program. 💁🏻")
             break

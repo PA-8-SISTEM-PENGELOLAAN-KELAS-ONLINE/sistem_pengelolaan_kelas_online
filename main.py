@@ -216,10 +216,17 @@ def buy_class(user):
     list_classes()
     cid = input("Masukkan id kelas yang ingin dibeli: ").strip()
     classes = read_csv("classes.csv")
-    kelas = next((c for c in classes if c['id']==cid), None)
+    kelas = next((c for c in classes if c['id'] == cid), None)
     if not kelas:
         print("Kelas tidak ditemukan.")
         return
+
+    purchases = read_csv("purchases.csv")
+    sudah_beli = any(p['user_id'] == user['id'] and p['class_id'] == cid for p in purchases)
+    if sudah_beli:
+        print("Anda sudah membeli kelas ini sebelumnya.")
+        return
+
     harga = int(kelas['harga'])
     if int(user['saldo']) < harga:
         print("Saldo tidak cukup.")
@@ -230,15 +237,22 @@ def buy_class(user):
     for u in users:
         if u['id'] == user['id']:
             u['saldo'] = user['saldo']
+
+    for u in users:
+        if u['nama'] == kelas['dosen'] and u['role'] == 'teacher':
+            u['saldo'] = str(int(u['saldo']) + harga)
+            break
+
     write_csv("users.csv", users, ['id','username','password','nama','role','saldo'])
 
     purchase = {
-        'id': str(len(read_csv("purchases.csv")) + 1),
+        'id': str(len(purchases) + 1),
         'user_id': user['id'],
         'class_id': cid,
         'timestamp': datetime.now().isoformat(sep=' ', timespec='seconds')
     }
     append_csv("purchases.csv", purchase, ['id','user_id','class_id','timestamp'])
+
     print("\n=== INVOICE PEMBELIAN ===")
     print(f"Nama: {user['nama']}")
     print(f"Kelas: {kelas['judul']}")

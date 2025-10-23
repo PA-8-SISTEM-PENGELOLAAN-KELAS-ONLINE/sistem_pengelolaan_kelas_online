@@ -3,7 +3,7 @@ from datetime import datetime
 from pwinput import pwinput
 from prettytable import PrettyTable
 
-# === UTILITY DASAR ===
+# BAGIAN UTILITY
 def read_csv(filename):
     try:
         with open(filename, mode='r', newline='', encoding='utf-8') as f:
@@ -31,7 +31,7 @@ def append_csv(filename, row, headers):
             writer.writerow(row)
 
 def generate_code(n=5):
-    return ''.join(random.choice(string.ascii_uppercase) for _ in range(n))
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(n))
 
 def show_table(title, headers, rows):
     table = PrettyTable()
@@ -41,7 +41,7 @@ def show_table(title, headers, rows):
     print("\n" + title)
     print(table)
 
-# === AUTH ===
+# BAGIAN AUTH
 def register():
     users = read_csv("users.csv")
     usernames = {u['username'] for u in users}
@@ -74,42 +74,24 @@ def register():
     print(f"Registrasi selesai. Anda terdaftar sebagai {role} dengan saldo 0.")
 
 # BAGIAN CRUD
-def login():
-    while True:
-        print("\n=== LOGIN ===")
-        username = input("Username: ").strip()
-        password = pwinput("Password: ")
-
-        users = read_csv("users.csv")
-        for user in users:
-            if user['username'] == username and user['password'] == password:
-                print(f"Selamat datang, {user['nama']} ({user['role']})")
-                return user
-
-        print("Login gagal: username atau password salah.")
-        pilihan = input("Apakah Anda ingin mencoba lagi? (y/n): ").strip().lower()
-        if pilihan != 'y':
-            print("Kembali ke menu utama...")
-            return None
-
 def create_class(user):
     print("\n=== BUAT KELAS ===")
     judul = input("Judul kelas: ")
     deskripsi = input("Deskripsi: ")
     harga = input("Harga: ")
-    materi = input("Nama file materi PDF: ")
-    data = read_csv("classes.csv")
+    materi = input("Materi : ")
+    kode_kelas = generate_code()
+
     new = {
-        'id': str(len(data) + 1),
-        'kode': generate_code(),
+        'kode': kode_kelas,
         'judul': judul,
         'dosen': user['nama'],
         'deskripsi': deskripsi,
         'harga': harga,
-        'materi_pdf': materi
+        'materi': materi
     }
-    append_csv("classes.csv", new, ['id','kode','judul','dosen','deskripsi','harga','materi_pdf'])
-    print("Kelas berhasil dibuat.")
+    append_csv("classes.csv", new, ['kode','judul','dosen','deskripsi','harga','materi'])
+    print(f"Kelas berhasil dibuat dengan kode: {kode_kelas}")
 
 def update_class(current_user):
     classes = read_csv("classes.csv")
@@ -119,9 +101,9 @@ def update_class(current_user):
         print("Anda belum membuat kelas untuk diubah.")
         return
 
-    show_table("Kelas Anda", ['id','kode','judul','deskripsi','harga','materi_pdf'], my_classes)
-    cid = input("Masukkan ID kelas yang ingin diupdate: ").strip()
-    kelas = next((c for c in classes if c['id'] == cid and c['dosen'] == current_user['nama']), None)
+    show_table("Kelas Anda", ['kode','judul','deskripsi','harga','materi'], my_classes)
+    kode = input("Masukkan kode kelas yang ingin diupdate: ").strip()
+    kelas = next((c for c in classes if c['kode'] == kode and c['dosen'] == current_user['nama']), None)
 
     if not kelas:
         print("Kelas tidak ditemukan atau bukan milik Anda.")
@@ -131,16 +113,16 @@ def update_class(current_user):
     new_title = input(f"Judul baru ({kelas['judul']}): ").strip() or kelas['judul']
     new_desc = input(f"Deskripsi baru ({kelas['deskripsi']}): ").strip() or kelas['deskripsi']
     new_price = input(f"Harga baru ({kelas['harga']}): ").strip() or kelas['harga']
-    new_pdf = input(f"File materi baru ({kelas['materi_pdf']}): ").strip() or kelas['materi_pdf']
+    new_materi = input(f"Materi baru ({kelas['materi']}): ").strip() or kelas['materi']
 
     for c in classes:
-        if c['id'] == cid:
+        if c['kode'] == kode:
             c['judul'] = new_title
             c['deskripsi'] = new_desc
             c['harga'] = new_price
-            c['materi_pdf'] = new_pdf
+            c['materi'] = new_materi
 
-    write_csv("classes.csv", classes, ['id','kode','judul','dosen','deskripsi','harga','materi_pdf'])
+    write_csv("classes.csv", classes, ['kode','judul','dosen','deskripsi','harga','materi'])
     print("Kelas berhasil diperbarui.")
 
 def delete_class(current_user):
@@ -151,9 +133,9 @@ def delete_class(current_user):
         print("Anda belum membuat kelas untuk dihapus.")
         return
 
-    show_table("Kelas Anda", ['id','kode','judul','deskripsi','harga','materi_pdf'], my_classes)
-    cid = input("Masukkan ID kelas yang ingin dihapus: ").strip()
-    kelas = next((c for c in classes if c['id'] == cid and c['dosen'] == current_user['nama']), None)
+    show_table("Kelas Anda", ['kode','judul','deskripsi','harga','materi'], my_classes)
+    kode = input("Masukkan kode kelas yang ingin dihapus: ").strip()
+    kelas = next((c for c in classes if c['kode'] == kode and c['dosen'] == current_user['nama']), None)
 
     if not kelas:
         print("Kelas tidak ditemukan atau bukan milik Anda.")
@@ -164,8 +146,8 @@ def delete_class(current_user):
         print("Penghapusan dibatalkan.")
         return
 
-    classes = [c for c in classes if c['id'] != cid]
-    write_csv("classes.csv", classes, ['id','kode','judul','dosen','deskripsi','harga','materi_pdf'])
+    classes = [c for c in classes if c['kode'] != kode]
+    write_csv("classes.csv", classes, ['kode','judul','dosen','deskripsi','harga','materi'])
     print(f"Kelas '{kelas['judul']}' telah dihapus.")
 
 def list_classes(detail=False):
@@ -173,7 +155,7 @@ def list_classes(detail=False):
     if not data:
         print("Belum ada kelas.")
         return
-    headers = ['id','kode','judul','dosen','deskripsi','harga'] if not detail else ['id','kode','judul','dosen','deskripsi','harga','materi_pdf']
+    headers = ['kode','judul','dosen','deskripsi','harga'] if not detail else ['kode','judul','dosen','deskripsi','harga','materi']
     show_table("Daftar Kelas", headers, data)
 
 def my_classes(current_user):
@@ -182,7 +164,7 @@ def my_classes(current_user):
     if not my_classes:
         print("Anda belum membuat kelas.")
         return
-    show_table("Kelas saya (Teacher)", ['id','kode','judul','deskripsi','harga','materi_pdf'], my_classes)
+    show_table("Kelas saya (Teacher)", ['kode','judul','deskripsi','harga','materi'], my_classes)
 
 def tambah_saldo(user):
     users = read_csv("users.csv")
@@ -214,15 +196,15 @@ def tambah_saldo(user):
 
 def buy_class(user):
     list_classes()
-    cid = input("Masukkan id kelas yang ingin dibeli: ").strip()
+    kode = input("Masukkan kode kelas yang ingin dibeli: ").strip()
     classes = read_csv("classes.csv")
-    kelas = next((c for c in classes if c['id'] == cid), None)
+    kelas = next((c for c in classes if c['kode'] == kode), None)
     if not kelas:
         print("Kelas tidak ditemukan.")
         return
 
     purchases = read_csv("purchases.csv")
-    sudah_beli = any(p['user_id'] == user['id'] and p['class_id'] == cid for p in purchases)
+    sudah_beli = any(p['user_id'] == user['id'] and p['class_kode'] == kode for p in purchases)
     if sudah_beli:
         print("Anda sudah membeli kelas ini sebelumnya.")
         return
@@ -248,10 +230,10 @@ def buy_class(user):
     purchase = {
         'id': str(len(purchases) + 1),
         'user_id': user['id'],
-        'class_id': cid,
+        'class_kode': kode,
         'timestamp': datetime.now().isoformat(sep=' ', timespec='seconds')
     }
-    append_csv("purchases.csv", purchase, ['id','user_id','class_id','timestamp'])
+    append_csv("purchases.csv", purchase, ['id','user_id','class_kode','timestamp'])
 
     print("\n=== INVOICE PEMBELIAN ===")
     print(f"Nama: {user['nama']}")
@@ -265,9 +247,9 @@ def buy_class(user):
 def access_class(user):
     purchases = read_csv("purchases.csv")
     classes = read_csv("classes.csv")
-    owned_ids = {p['class_id'] for p in purchases if p['user_id']== user['id']}
-    owned_classes = [c for c in classes if c['id'] in owned_ids]
-    show_table("Kelas Dimiliki", ['id','kode','judul','dosen','deskripsi','materi_pdf'], owned_classes)
+    owned_kodes = {p['class_kode'] for p in purchases if p['user_id']== user['id']}
+    owned_classes = [c for c in classes if c['kode'] in owned_kodes]
+    show_table("Kelas Dimiliki", ['kode','judul','dosen','deskripsi','materi'], owned_classes)
 
 # BAGIAN MENU
 def main_menu():
@@ -288,6 +270,24 @@ def main_menu():
             break
         else:
             print("Pilihan tidak valid.")
+
+def login():
+    while True:
+        print("\n=== LOGIN ===")
+        username = input("Username: ").strip()
+        password = pwinput("Password: ")
+
+        users = read_csv("users.csv")
+        for user in users:
+            if user['username'] == username and user['password'] == password:
+                print(f"Selamat datang, {user['nama']} ({user['role']})")
+                return user
+
+        print("Login gagal: username atau password salah.")
+        pilihan = input("Apakah Anda ingin mencoba lagi? (y/n): ").strip().lower()
+        if pilihan != 'y':
+            print("Kembali ke menu utama...")
+            return None
 
 def session(user):
     while True:
@@ -311,7 +311,6 @@ def session(user):
                 break
             else:
                 print("Pilihan Anda tidak tersedia!")
-
 
         elif user["role"] == "teacher":
             print("1. Lihat semua kelas")

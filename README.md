@@ -4,9 +4,9 @@ Kelompok 8 Anggota:
 1. Zefri Al Rizqullah	(2509116084)
 2. Muhammad Aqia Yudha Yulian Putra	(2509116105)
 3. Rifaa Zainul Arifin	(2509116092)
-
-👨‍🎓 Fitur untuk Student:
 <br>
+
+<h4>👨‍🎓 Fitur untuk Student:</h4>
 1. Registrasi dan Login - Sistem autentikasi user
 <br>
 2. Top Up Saldo - Menambah saldo dengan berbagai nominal
@@ -17,8 +17,7 @@ Kelompok 8 Anggota:
 <br>
 5. Akses Kelas - Mengakses kelas yang telah dibeli
 
-👨‍🏫 Fitur untuk Teacher:
-<br>
+<h4>👨‍🏫 Fitur untuk Teacher:</h4> 
 1. Kelola Kelas - Membuat, mengedit, dan menghapus kelas
 <br>
 2. Lihat Pembeli - Melihat daftar student yang membeli kelas
@@ -27,8 +26,7 @@ Kelompok 8 Anggota:
 <br>
 4. Konten Materi - Mengelola materi pembelajaran
 
-🛠 Teknologi
-<br>
+<h4>🛠 Teknologi</h4>
 1. Python - Bahasa pemrograman utama
 <br>
 2. CSV - Penyimpanan data (users, classes, purchases)

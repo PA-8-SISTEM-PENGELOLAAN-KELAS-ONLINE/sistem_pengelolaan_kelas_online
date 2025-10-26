@@ -7,37 +7,37 @@ Rifaa Zainul Arifin	2509116092
 
 👨‍🎓 Fitur untuk Student:
 <br>
-Registrasi dan Login - Sistem autentikasi user
+1. Registrasi dan Login - Sistem autentikasi user
 <br>
-Top Up Saldo - Menambah saldo dengan berbagai nominal
+2. Top Up Saldo - Menambah saldo dengan berbagai nominal
 <br>
-Beli Kelas - Membeli kelas online yang tersedia
+3. Beli Kelas - Membeli kelas online yang tersedia
 <br>
-Lihat Kelas - Melihat daftar kelas yang tersedia
+4. Lihat Kelas - Melihat daftar kelas yang tersedia
 <br>
-Akses Kelas - Mengakses kelas yang telah dibeli
+5. Akses Kelas - Mengakses kelas yang telah dibeli
 
 👨‍🏫 Fitur untuk Teacher:
 <br>
-Kelola Kelas - Membuat, mengedit, dan menghapus kelas
+1. Kelola Kelas - Membuat, mengedit, dan menghapus kelas
 <br>
-Lihat Pembeli - Melihat daftar student yang membeli kelas
+2. Lihat Pembeli - Melihat daftar student yang membeli kelas
 <br>
-Pendapatan - Menerima pembayaran dari penjualan kelas
+3. Pendapatan - Menerima pembayaran dari penjualan kelas
 <br>
-Konten Materi - Mengelola materi pembelajaran
+4. Konten Materi - Mengelola materi pembelajaran
 
 🛠 Teknologi
 <br>
-Python 3.x - Bahasa pemrograman utama
+1. Python - Bahasa pemrograman utama
 <br>
-CSV - Penyimpanan data (users, classes, purchases)
+2. CSV - Penyimpanan data (users, classes, purchases)
 <br>
-PrettyTable - Menampilkan data dalam format tabel
+3. PrettyTable - Menampilkan data dalam format tabel
 <br>
-pwinput - Input password yang tersembunyi
+4. pwinput - Input password yang tersembunyi
 <br>
-datetime - Penanganan timestamp transaksi
+5. datetime - Penanganan timestamp transaksi
 
 <h2>Flowchart Menu Utama</h2>
 <img width="1331" height="962" alt="1 drawio" src="https://github.com/user-attachments/assets/1d1834f1-d428-4e41-88d9-56b0ceb0a8a6" />

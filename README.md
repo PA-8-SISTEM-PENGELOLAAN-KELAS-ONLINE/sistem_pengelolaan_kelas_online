@@ -1,9 +1,9 @@
 # Sistem Pengelolaan Kelas Online
 PROJECT AKHIR: DASAR PEMROGRAMAN SEMESTER 1.
 Kelompok 8 Anggota:
-Zefri Al Rizqullah	2509116084
-Muhammad Aqia Yudha Yulian Putra	2509116105
-Rifaa Zainul Arifin	2509116092
+1. Zefri Al Rizqullah	(2509116084)
+2. Muhammad Aqia Yudha Yulian Putra	(2509116105)
+3. Rifaa Zainul Arifin	(2509116092)
 
 👨‍🎓 Fitur untuk Student:
 <br>

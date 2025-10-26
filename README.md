@@ -1,4 +1,4 @@
-<img width="347" height="65" alt="image" src="https://github.com/user-attachments/assets/45b93d12-54ab-4700-82de-b9871ff41b0e" /><img width="274" height="107" alt="image" src="https://github.com/user-attachments/assets/7f98be93-f9d0-4431-b571-877b5000bbd8" /><img width="468" height="70" alt="image" src="https://github.com/user-attachments/assets/e3222ed3-6e2e-4634-a974-f1fe5c8a09b9" /><img width="468" height="29" alt="image" src="https://github.com/user-attachments/assets/b1de3f33-b4fb-4140-8e5e-250206cce60d" /><img width="314" height="61" alt="image" src="https://github.com/user-attachments/assets/d1a6b2ef-7850-43f0-80de-02f48249b976" /># Sistem Pengelolaan Kelas Online
+# Sistem Pengelolaan Kelas Online
 PROJECT AKHIR: DASAR PEMROGRAMAN SEMESTER 1.
 Kelompok 8 Anggota:
 Zefri Al Rizqullah	2509116084
